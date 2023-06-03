@@ -3,27 +3,32 @@ const Report = require("../../../model/report");
 
 module.exports.register = async (req, res) => {
   try {
-    const patient = await Patient.findOne({
-      phone: req.body.phone,
-    });
+    const { phone, name } = req.body;
+
+    if (!phone || !name) {
+      return res.status(400).json({
+        message: "Invalid patient data",
+        error: "Phone and name fields are required",
+      });
+    }
+
+    const patient = await Patient.findOne({ phone });
 
     if (patient) {
       return res.status(409).json({
-        patient: patient,
+        patient,
         message: "Patient already registered",
       });
     } else {
       const newPatient = await Patient.create({
-        phone: req.body.phone,
-        name: req.body.name,
+        phone,
+        name,
       });
 
-      if (newPatient) {
-        return res.status(201).json({
-          patient: newPatient,
-          message: "Patient registered successfully",
-        });
-      }
+      return res.status(201).json({
+        patient: newPatient,
+        message: "Patient registered successfully",
+      });
     }
   } catch (err) {
     return res.status(500).json({

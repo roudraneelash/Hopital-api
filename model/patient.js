@@ -2,21 +2,18 @@ const mongoose = require("mongoose");
 
 const patientSchema = mongoose.Schema(
   {
-    doctor: {
+    name: {
       type: String,
       required: true,
     },
-    status: {
+    phone: {
       type: String,
-      required: true,
-      unique: true,
-    },
-    date: {
-      type: Date,
       required: true,
     },
   },
-  {}
+  {
+    timestamps: true,
+  }
 );
 
 const Patient = mongoose.model("Patient", patientSchema);

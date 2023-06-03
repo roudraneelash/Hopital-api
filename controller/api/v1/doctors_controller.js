@@ -1,4 +1,5 @@
 const Doctor = require("../../../model/doctor"); // Import the Doctor model
+const jwt = require("jsonwebtoken");
 
 module.exports.register = async (req, res) => {
   try {
@@ -11,6 +12,7 @@ module.exports.register = async (req, res) => {
       const doc = await Doctor.findOne({
         email: req.body.email,
       });
+
       if (!doc) {
         const newDoc = await Doctor.create({
           name: req.body.name,
@@ -37,6 +39,36 @@ module.exports.register = async (req, res) => {
   }
 };
 
-module.exports.createSession = (req, res) => {
-  return res.end("Create session for doctor");
+module.exports.createSession = async (req, res) => {
+  try {
+    // Find the doctor with the provided email
+    const doctor = await Doctor.findOne({
+      email: req.body.email,
+    });
+
+    //Check if the doctor exists and verify the password
+    if (!doctor || doctor.password != req.body.password) {
+      return res.status(422).json({
+        message: "Invalid username/password",
+      });
+    } else {
+      // Generate a JWT token for the authenticated doctor
+      //second parameter is the secret key
+      const token = jwt.sign(doctor.toJSON(), "secret", {
+        expiresIn: "1000000",
+      });
+
+      return res.status(200).json({
+        message: "Sign in successful, here is your token",
+        data: {
+          token: token,
+        },
+      });
+    }
+  } catch (err) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: err.message, // Include the error message for debugging purposes
+    });
+  }
 };
